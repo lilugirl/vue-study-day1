@@ -8,8 +8,28 @@ class Store{
         this.$options=options;
         this._mutations=options.mutations;
         this._actions=options.actions;
-        this._getters=options.getters;
-        console.log(Vue);
+        this._wrappedGetters=options.getters;
+        
+        //定义computed选项
+        const computed={}
+        this.getters={}
+        // {dobuleCounter(state){}}
+        const store=this;
+        Object.keys(this._wrappedGetters).forEach(key=>{
+            // 获取用户定义的getter
+            const fn=store._wrappedGetters[key]
+            // 转换为computed可以使用无参数形式
+            computed[key]=function(){
+                return fn(store.state)
+            }
+
+            // 为getters定义只读属性
+            Object.defineProperty(store.getters,key,{
+                get:()=>{
+                    return store._vm[key]
+                }
+            })
+        })
 
         // api state
         // 用户传入的state选项应该是响应式
@@ -20,7 +40,8 @@ class Store{
                      // 不希望¥$$state被代理 所以加两个$
                      $$state:options.state
                 }
-            }
+            },
+            computed
         })
     
 
@@ -60,16 +81,6 @@ class Store{
       return entry(this,payload)
     }
 
-    getters(type,payload){
-
-       const entry=this._getters[type]
-       if(!entry){
-           console.error('error');
-           return;
-       }
-
-       return entry(this.state,payload)
-    }
 }
 
 let Vue;
