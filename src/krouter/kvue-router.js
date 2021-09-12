@@ -1,3 +1,4 @@
+import RouterView from './krouter-view'
 let Vue;
 // Vue插件的编写
 // 实现一个install方法
@@ -10,14 +11,48 @@ class VueRouter {
     // Vue.set(this,'current','/') 要求this本身是响应式
     // Object.defineProperty() 只是拦截 没有依赖
     // 给制定对象定义响应式属性
-    Vue.util.defineReactive(this,'current',window.location.hash.slice(1) || '/')
+    //Vue.util.defineReactive(this,'current',window.location.hash.slice(1) || '/')
+    this.current=window.location.hash.slice(1) || '/'
+    Vue.util.defineReactive(this,'matched',[]);
+    // match方法可以递归遍历路由表 获得匹配关系的数组
+    this.match()
     
 
     // 监控hashchange
     window.addEventListener('hashchange',()=>{
        // #/about => /about
        this.current=window.location.hash.slice(1)
+       this.matched=[]
+       this.match()
     })
+
+    // 创建一个路由映射表
+    // this.routeMap={}
+    // options.routes.forEach(route=>{
+    //     this.routeMap[route.path]=route
+    // })
+  }
+
+  match(routes){
+      routes=routes || this.$options.routes
+
+      // 递归遍历
+      for(const route of routes){
+          if(route.path ==='/' && this.current==='/'){
+             this.matched.push(route)
+             return
+          }
+
+          // /about/info
+          if(route.path!=='/' && this.current.indexOf(route.path) !='-1' ){
+              this.matched.push(route)
+              if(route.children){
+                  this.match(route.children)
+              }
+              return 
+
+          }
+      }
   }
 }
 
@@ -67,23 +102,8 @@ VueRouter.install = function(_Vue) {
       );
     },
   });
-  Vue.component("router-view", {
-    // vue.runtime.js
-    // vue.js compiler->template->render()
-    // template:'<div>router-view</div>'
-    render(h) {
-      // 可以传入一个组件直接渲染
-      // 思路： 如果可以根据url的hash部分动态的匹配这个要渲染的组件
-      // window.location.hash
-      // this.$router
-      let component=null;
-      const route=this.$router.$options.routes.find(route=>route.path===this.$router.current)
-      if(route){
-          component=route.component;
-      }
-      return h(component);
-    },
-  });
+  Vue.component("router-view", RouterView
+  );
 };
 
 export default VueRouter;

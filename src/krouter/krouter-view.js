@@ -16,10 +16,11 @@ export default {
         }
 
         // 获取path对应的component
-        const {routeMap,current}=this.$router;
-        console.log(routeMap,current);
-
-        const component=routeMap[current].component || null;
+        let component=null;
+        const route=this.$router.matched[depth]
+        if(route){
+            component=route.component
+        }
         return h(component)
     }
 }
