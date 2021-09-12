@@ -3,7 +3,6 @@ let Vue;
 // 实现一个install方法
 class VueRouter {
   constructor(options) {
-    console.log(Vue);
     this.$options=options;
 
     // 保存当前hash到current
@@ -52,7 +51,6 @@ VueRouter.install = function(_Vue) {
     },
 
     render(h) {
-      console.log("h", h);
       // h就是createElement()
       // 作用 返回一个虚拟dom
       // <router-link to="/about">abc</router-link>
